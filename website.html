@@ -3,171 +3,160 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Schwarze Website</title>
+  <title>Galaxie Website</title>
 
   <style>
-    :root{
-      --bg:#000000;
-      --panel:rgba(255,255,255,0.03);
-      --muted:rgba(255,255,255,0.6);
-      --accent:rgba(120,100,255,0.95);
-      --glass: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      --radius:14px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Segoe UI Mono", monospace;
-      --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    * {box-sizing: border-box; margin: 0; padding: 0;}
+    html, body {height: 100%;}
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at 20% 20%, #060014, #000000 90%),
+                  url('https://images.unsplash.com/photo-1570284613060-766c33850e00?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmxhdWUlMjBnYWxheGllfGVufDB8fDB8fHww&fm=jpg&q=60&w=3000') no-repeat center center fixed;
+      background-size: cover;
+      background-blend-mode: overlay;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
     }
 
-    html,body{height:100%;}
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:var(--sans);
-      background: radial-gradient(1200px 600px at 10% 10%, rgba(120,100,255,0.06), transparent),
-                  radial-gradient(900px 450px at 90% 90%, rgba(0,200,255,0.03), transparent),
-                  var(--bg);
-      color:#eaeaea;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:32px;
+    /* Nur der Hintergrund soll leicht verschwommen sein */
+    .bg-blur {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('https://images.unsplash.com/photo-1447433819943-74a20887a81e?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+      background-size: cover;
+      filter: blur(6px) brightness(0.9);
+      z-index: 0;
     }
 
-    .site{
-      width:min(1100px, 96vw);
-      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-      border-radius:18px;
-      padding:28px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 60px rgba(120,100,255,0.06) inset;
-      backdrop-filter: blur(6px) saturate(120%);
-      border:1px solid rgba(255,255,255,0.03);
-      display:grid;
-      grid-template-columns: 1fr 340px;
-      gap:20px;
-      align-items:start;
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      background: rgba(0,0,0,0.6);
+      padding: 20px 40px;
+      border-radius: 12px;
+      backdrop-filter: blur(6px);
+      position: relative;
+      z-index: 2;
     }
 
-    header{
-      grid-column:1 / -1;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
+    h1 {
+      font-size: 2.5rem;
+      letter-spacing: 2px;
+      color: #c0a6ff;
+      text-shadow: 0 0 10px #8f6aff, 0 0 25px #3f2aff;
     }
 
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:12px;
+    p.lead {
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.8);
+      margin-top: 10px;
     }
 
-    .logo{
-      width:56px;height:56px;border-radius:12px;
-      background: conic-gradient(from 120deg, rgba(120,100,255,0.20), rgba(0,200,255,0.12));
-      display:flex;align-items:center;justify-content:center;
-      font-family:var(--mono);font-weight:700;color:transparent;
-      -webkit-text-stroke: 0.6px rgba(255,255,255,0.12);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.7);
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+      width: 90%;
+      max-width: 1000px;
+      position: relative;
+      z-index: 2;
     }
 
-    h1{
-      margin:0;font-size:28px;letter-spacing:0.6px;
-      text-shadow: 0 6px 24px rgba(120,100,255,0.08);
+    .box {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(5px);
     }
 
-    p.lead{margin:6px 0 0;color:var(--muted);font-size:14px}
-
-    .content{
-      padding:18px 12px 12px 12px;
-      border-radius:12px;background:var(--panel);
-      min-height:320px;overflow:auto;
+    .box::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(150,100,255,0.3) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
     }
 
-    .sidebar{
-      padding:18px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
-      min-height:320px;
+    .box:hover::before {
+      opacity: 1;
     }
 
-    .btn{
-      display:inline-block;padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);
-      background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.015));
-      color:inherit;text-decoration:none;font-weight:600;font-size:14px;
-      cursor:pointer;transition:transform .15s ease, box-shadow .15s ease;
-    }
-    .btn:active{transform:translateY(1px)}
-
-    .neon{
-      font-family:var(--mono);font-size:42px;letter-spacing:2px;
-      color:transparent;-webkit-text-stroke:0.6px rgba(255,255,255,0.12);
-      text-shadow:
-        0 0 8px rgba(120,100,255,0.12),
-        0 10px 30px rgba(120,100,255,0.04);
-      display:inline-block;padding:8px 14px;border-radius:10px;
-      background: linear-gradient(90deg, rgba(120,100,255,0.06), rgba(0,200,255,0.03));
+    .box:hover {
+      transform: translateY(-10px) scale(1.05);
+      box-shadow: 0 0 35px rgba(150,100,255,0.6);
+      background: rgba(255, 255, 255, 0.12);
     }
 
-    .card{padding:14px;border-radius:10px;margin-bottom:12px;background:rgba(255,255,255,0.01);border:1px solid rgba(255,255,255,0.02)}
-
-    footer{grid-column:1 / -1;padding-top:12px;color:var(--muted);font-size:13px;display:flex;justify-content:space-between;align-items:center}
-
-    @media (max-width:900px){
-      .site{grid-template-columns:1fr;}
-      .logo{width:48px;height:48px}
-      .neon{font-size:34px}
+    footer {
+      margin-top: 50px;
+      color: rgba(255,255,255,0.6);
+      font-size: 0.9rem;
+      background: rgba(0,0,0,0.5);
+      padding: 10px 20px;
+      border-radius: 10px;
+      backdrop-filter: blur(6px);
+      position: relative;
+      z-index: 2;
     }
   </style>
 </head>
 <body>
-  <main class="site" role="main">
-    <header>
-      <div class="brand">
-        <div class="logo">B</div>
-        <div>
-          <h1>Schwarze Website</h1>
-          <p class="lead">Minimal, dunkles Layout — bereit zum Anpassen.</p>
-        </div>
-      </div>
+  <div class="bg-blur"></div>
 
-      <nav>
-        <a class="btn" href="#">Home</a>
-        <a class="btn" href="#">Kontakt</a>
-      </nav>
-    </header>
+  <header>
+    <h1>Galaxie Design</h1>
+    <p class="lead">Ein sanfter, verschwommener Sternenhintergrund mit nur Galaxie und Sternen.</p>
+  </header>
 
-    <section class="content">
-      <div class="neon">Dunkelmodus</div>
+  <section class="container">
+    <div class="box">
+      <h2>Kasten 1</h2>
+      <p>Ein heller Effekt erscheint, wenn du mit der Maus drüberfährst.</p>
+    </div>
 
-      <div style="height:18px"></div>
+    <div class="box">
+      <h2>Kasten 2</h2>
+      <p>Der Galaxie-Stil kombiniert Tiefe, Glanz und Schatten.</p>
+    </div>
 
-      <div class="card">
-        <h3 style="margin:0 0 6px 0">Überschrift</h3>
-        <p style="margin:0;color:var(--muted)">Hier steht Platzhalter-Text. Ersetze ihn mit deinem Inhalt. Die Seite nutzt eine komplett schwarze Basis und subtile Leuchteffekte.</p>
-      </div>
+    <div class="box">
+      <h2>Kasten 3</h2>
+      <p>Nutze ihn für Inhalte, Infos oder kleine Projekte.</p>
+    </div>
 
-      <div class="card">
-        <h4 style="margin:0 0 8px 0">Sektion</h4>
-        <p style="margin:0 0 12px 0;color:var(--muted)">Einfaches Panel mit Scrollbarkeit und sanften Rändern.</p>
-        <a class="btn" href="#">Aktion</a>
-      </div>
-    </section>
+    <div class="box">
+      <h2>Kasten 4</h2>
+      <p>Hover-Effekte bringen Dynamik in das Design.</p>
+    </div>
 
-    <aside class="sidebar">
-      <div class="card">
-        <strong>Info</strong>
-        <p style="margin:8px 0 0 0;color:var(--muted);font-size:13px">Kurze Sidebar mit Links oder Einstellungen.</p>
-      </div>
+    <div class="box">
+      <h2>Kasten 5</h2>
+      <p>Ein minimalistisches, aber modernes Galaxie-Thema.</p>
+    </div>
+  </section>
 
-      <div class="card">
-        <strong>Kontakt</strong>
-        <p style="margin:8px 0 0 0;color:var(--muted);font-size:13px">email@example.de</p>
-      </div>
-    </aside>
-
-    <footer>
-      <div>© „Deine Seite"</div>
-      <div style="color:var(--muted)">dark • minimal</div>
-    </footer>
-  </main>
+  <footer>
+    <p>© 2025 Galaxie Website</p>
+  </footer>
 </body>
 </html>
