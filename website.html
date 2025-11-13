@@ -107,6 +107,24 @@
       background: rgba(255, 255, 255, 0.12);
     }
 
+    /* Link Styling */
+    .box a {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 20px;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      background: rgba(150, 100, 255, 0.6);
+      transition: background 0.3s;
+      position: relative; /* über dem Blur */
+      z-index: 3;
+    }
+
+    .box a:hover {
+      background: rgba(150, 100, 255, 0.9);
+    }
+
     footer {
       margin-top: 50px;
       color: rgba(255,255,255,0.6);
@@ -130,7 +148,7 @@
 
   <section class="container">
     <div class="box">
-      <h2>Our Disocrd</h2>
+      <h2>Our Discord</h2>
       <p>Join our discord for support and more</p>
       <a href="https://discord.gg/invite/fnxrYKZdhb" target="_blank">Discord-Link</a>
     </div>
