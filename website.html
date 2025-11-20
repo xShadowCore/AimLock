@@ -9,7 +9,7 @@
   body {
     font-family: "Segoe UI", Roboto, Arial, sans-serif;
     color: #fff;
-    background: url('/mnt/data/9b6259f6-f599-40f5-ad7a-3503e556ae1a.png') center/cover no-repeat fixed;
+    background: url('https://images.unsplash.com/photo-1570284613060-766c33850e00?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') center/cover no-repeat fixed;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -54,7 +54,6 @@
     box-shadow: 0 8px 30px rgba(123,91,255,0.15);
   }
 
-  /* Menu */
   .overlay {
     position: fixed;
     inset: 0;
@@ -144,24 +143,18 @@
 
   <button class="show-versions-btn" id="openMenuBtn">Versionen anzeigen</button>
 
-  <!-- Overlay / Menu -->
   <div class="overlay" id="overlay">
     <div class="menu" role="dialog" aria-modal="true" aria-label="Versionen Menü">
-      <!-- Schließen -->
       <button class="close-x" id="closeBtn" title="Schließen">✕</button>
-
-      <!-- Version-Kacheln (werden per JS erzeugt) -->
     </div>
   </div>
 
 <script>
-  // Versionen-Liste
   const versions = [
     { v: '1.21.4', state: 'soon' },
     { v: '1.21.5', state: 'soon' },
     { v: '1.21.6', state: 'soon' },
     { v: '1.21.7', state: 'soon' },
-    // 1.21.8 hat Download; hier kannst du den Pfad anpassen:
     { v: '1.21.8', state: 'download', file: 'downloads/aimlock-1.21.8.exe' },
     { v: '1.21.9', state: 'soon' },
     { v: '1.21.10', state: 'soon' }
@@ -173,7 +166,6 @@
   const menu = overlay.querySelector('.menu');
 
   function buildMenu() {
-    // entferne existierende kacheln (falls)
     const existing = menu.querySelectorAll('.version');
     existing.forEach(n => n.remove());
 
@@ -194,24 +186,17 @@
         btnWrap.appendChild(b);
       } else if (item.state === 'download') {
         meta.textContent = '';
-        // Download-Link: href bestimmt welche Datei geladen wird
         const a = document.createElement('a');
         a.className = 'btn download';
         a.textContent = 'Download';
-        // Hier festlegen, welche Datei heruntergeladen werden soll:
-        // 1) relative Pfad zur Datei auf deinem Webserver (z.B. "downloads/aimlock-1.21.8.exe")
-        // 2) oder vollständige URL "https://example.com/files/aimlock.exe"
         a.href = item.file;
-        a.setAttribute('download', 'aimlock-1.21.8.exe'); // optional: gewünschter Dateiname beim Speichern
+        a.setAttribute('download', 'aimlock-1.21.8.exe');
         btnWrap.appendChild(a);
-
-        // Alternativ: Du kannst per JS die Datei über fetch abrufen und dann als Blob anbieten (siehe Hinweis unten)
       }
 
       div.appendChild(h);
       div.appendChild(meta);
       div.appendChild(btnWrap);
-      // Zwischenräume: falls du mehr Inhalt willst, erweitere hier
       menu.appendChild(div);
     });
   }
@@ -222,25 +207,6 @@
   });
   closeBtn.addEventListener('click', () => overlay.style.display = 'none');
   overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.style.display = 'none'; });
-
-  // Optional: Funktion zum erzwingen des Downloads per JS (wenn nötig)
-  // Beispiel: fetch die Datei und zwinge den Browser, eine Datei mit bestimmtem Namen zu speichern.
-  async function forceDownload(url, suggestedFilename) {
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('Download fehlgeschlagen');
-    const blob = await resp.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = suggestedFilename || '';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(blobUrl);
-  }
-
-  // Hinweis: forceDownload wird nur benötigt, wenn du z.B. CORS/remote/response header steuerst
-  // und dem Browser einen bestimmten Dateinamen per JS zuweisen willst.
 </script>
 
 </body>
