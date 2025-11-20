@@ -1,171 +1,247 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AimLock</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AimLock - Downloads</title>
+<style>
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    color: #fff;
+    background: url('/mnt/data/9b6259f6-f599-40f5-ad7a-3503e556ae1a.png') center/cover no-repeat fixed;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 40px 20px 80px;
+  }
 
-  <style>
-    * {box-sizing: border-box; margin: 0; padding: 0;}
-    html, body {height: 100%;}
+  .logo {
+    background: rgba(0,0,0,0.5);
+    padding: 18px 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+  }
+  .logo h1 { font-size: 34px; letter-spacing: 1px; margin-bottom: 6px; color: #d9b8ff; }
+  .cards { display:flex; gap:24px; justify-content:center; width:100%; max-width:1100px; }
+  .card {
+    background: rgba(10,20,30,0.45);
+    padding: 26px;
+    border-radius: 14px;
+    width: 320px;
+    text-align:center;
+    border: 1px solid rgba(255,255,255,0.06);
+    backdrop-filter: blur(6px);
+  }
+  .card h3 { margin-bottom: 8px; font-size:20px; }
+  .card p { font-size:14px; color: #dfe9f2; opacity:0.9; }
 
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: radial-gradient(circle at 20% 20%, #060014, #000000 90%),
-                  url('https://images.unsplash.com/photo-1570284613060-766c33850e00?fm=jpg&q=60&w=3000') no-repeat center center fixed;
-      background-size: cover;
-      background-blend-mode: overlay;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      overflow-x: hidden;
-      position: relative;
-      padding-top: 40px;
-    }
+  .show-versions-btn {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg,#7b5fff,#a17bff);
+    padding: 12px 22px;
+    border-radius: 28px;
+    border: none;
+    color: white;
+    font-size:16px;
+    cursor:pointer;
+    box-shadow: 0 8px 30px rgba(123,91,255,0.15);
+  }
 
-    .bg-blur {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: url('https://images.unsplash.com/photo-1570284613060-766c33850e00?fm=jpg&q=60&w=3000') no-repeat center center fixed;
-      background-size: cover;
-      filter: blur(3px) brightness(0.9); /* verringerter Blur */
-      z-index: 0;
-    }
+  /* Menu */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(6,8,12,0.6);
+    z-index: 999;
+    padding: 20px;
+  }
+  .menu {
+    width: 100%;
+    max-width: 760px;
+    background: rgba(4,6,12,0.6);
+    padding: 22px;
+    border-radius: 12px;
+    display: grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 12px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .version {
+    background: rgba(255,255,255,0.03);
+    padding: 12px;
+    border-radius: 8px;
+    text-align:center;
+  }
+  .version h4 { margin-bottom:6px; }
+  .version .meta { margin-bottom:8px; opacity:0.9; }
 
-    header {
-      text-align: center;
-      margin-bottom: 40px;
-      background: rgba(0,0,0,0.6);
-      padding: 20px 40px;
-      border-radius: 12px;
-      backdrop-filter: blur(4px);
-      position: relative;
-      z-index: 2;
-    }
+  .btn {
+    display:inline-block;
+    padding:8px 12px;
+    border-radius:8px;
+    text-decoration:none;
+    font-weight:600;
+    border: none;
+    cursor:pointer;
+  }
+  .btn.soon { background: rgba(255,255,255,0.06); color: #eee; cursor: default; }
+  .btn.download {
+    background: linear-gradient(90deg,#6fb3ff,#7b5fff);
+    color:#041024;
+  }
 
-    h1 {
-      font-size: 2.5rem;
-      letter-spacing: 2px;
-      color: #c0a6ff;
-      text-shadow: 0 0 10px #8f6aff, 0 0 25px #3f2aff;
-    }
+  .close-x {
+    position:absolute;
+    top:20px;
+    right:20px;
+    color:#fff;
+    font-size:18px;
+    background:transparent;
+    border:0;
+    cursor:pointer;
+  }
 
-    .container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 30px;
-      width: 90%;
-      max-width: 1000px;
-      position: relative;
-      z-index: 2;
-      margin-bottom: 60px;
-    }
-
-    .box {
-      background: rgba(255,255,255,0.08);
-      border-radius: 15px;
-      padding: 30px;
-      text-align: center;
-      border: 1px solid rgba(255,255,255,0.1);
-      backdrop-filter: blur(4px);
-      transition: all 0.3s ease;
-    }
-
-    .box a {
-      display: inline-block;
-      margin-top: 15px;
-      padding: 10px 20px;
-      border-radius: 8px;
-      color: #fff;
-      background: rgba(150, 100, 255, 0.7);
-      text-decoration: none;
-    }
-
-    .box a:hover {
-      background: rgba(150, 100, 255, 1);
-    }
-
-    footer {
-      margin-bottom: 40px;
-      color: rgba(255,255,255,0.6);
-      font-size: 0.9rem;
-      background: rgba(0,0,0,0.5);
-      padding: 10px 20px;
-      border-radius: 10px;
-      backdrop-filter: blur(3px);
-      position: relative;
-      z-index: 2;
-    }
-  </style>
+  @media (max-width:700px) {
+    .cards { flex-direction: column; align-items:center; }
+    .menu { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
-  <div class="bg-blur"></div>
 
-  <header>
+  <div class="logo">
     <h1>AimLock</h1>
-    <p class="lead">The HackClient for Fortnite</p>
-  </header>
+    <div>The HackClient for Fortnite</div>
+  </div>
 
-  <section class="container">
-
-    <div class="box">
-      <h2>Our Discord</h2>
+  <div class="cards" aria-hidden="true">
+    <div class="card">
+      <h3>Our Discord</h3>
       <p>Join our discord for support and The mod</p>
-      <a href="https://discord.gg/NMxqjrJ4Au" target="_blank">Discord</a>
+      <button class="btn" onclick="window.open('https://discord.com','_blank')">Discord</button>
     </div>
 
-    <div class="box">
-      <h2>Owners</h2>
-      <p>xShadowCore</p>
-      <p>UserID: 1109112702347006053</p>
+    <div class="card">
+      <h3>Owners</h3>
+      <p>xShadowCore<br>UserID: 1109112702347006053</p>
     </div>
 
-    <div class="box">
-      <h2>Status</h2>
+    <div class="card">
+      <h3>Status</h3>
       <p>The mod is currently still in development. Join our Discord to not miss the release.</p>
     </div>
+  </div>
 
-    <!-- Download 1.21.8 -->
-    <div class="box">
-      <h2>Download 1.21.8</h2>
-      <a href="/downloads/aimlock_1.21.8.zip" download>Download</a>
+  <button class="show-versions-btn" id="openMenuBtn">Versionen anzeigen</button>
+
+  <!-- Overlay / Menu -->
+  <div class="overlay" id="overlay">
+    <div class="menu" role="dialog" aria-modal="true" aria-label="Versionen Menü">
+      <!-- Schließen -->
+      <button class="close-x" id="closeBtn" title="Schließen">✕</button>
+
+      <!-- Version-Kacheln (werden per JS erzeugt) -->
     </div>
-
-    <!-- More Button → Übersicht -->
-    <div class="box">
-      <h2>More</h2>
-      <p>Alle Versionen anzeigen</p>
-      <a href="#" onclick="document.querySelector('.container').style.display='none'; document.getElementById('versions').style.display='grid'; window.scrollTo(0,0);">View</a>
-    </div>
-
-    </section>
-
-<!-- Versions Übersicht -->
-<section id="versions" class="container" style="display:none; margin-top:40px;">
-  <div class="box">
-    <h2>1.21.8</h2>
-    <p>Soon</p>
   </div>
-  <div class="box">
-    <h2>1.21.9</h2>
-    <p>Soon</p>
-  </div>
-  <div class="box">
-    <h2>1.21.10</h2>
-    <p>Soon</p>
-  </div>
-</section>
 
-  <footer>
-    <p>© 2025 AIMlock</p>
-    <p>All rights reserved</p>
-  </footer>
+<script>
+  // Versionen-Liste
+  const versions = [
+    { v: '1.21.4', state: 'soon' },
+    { v: '1.21.5', state: 'soon' },
+    { v: '1.21.6', state: 'soon' },
+    { v: '1.21.7', state: 'soon' },
+    // 1.21.8 hat Download; hier kannst du den Pfad anpassen:
+    { v: '1.21.8', state: 'download', file: 'downloads/aimlock-1.21.8.exe' },
+    { v: '1.21.9', state: 'soon' },
+    { v: '1.21.10', state: 'soon' }
+  ];
+
+  const overlay = document.getElementById('overlay');
+  const openBtn = document.getElementById('openMenuBtn');
+  const closeBtn = document.getElementById('closeBtn');
+  const menu = overlay.querySelector('.menu');
+
+  function buildMenu() {
+    // entferne existierende kacheln (falls)
+    const existing = menu.querySelectorAll('.version');
+    existing.forEach(n => n.remove());
+
+    versions.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'version';
+      const h = document.createElement('h4');
+      h.textContent = item.v;
+      const meta = document.createElement('div');
+      meta.className = 'meta';
+      const btnWrap = document.createElement('div');
+
+      if (item.state === 'soon') {
+        meta.textContent = 'Soon';
+        const b = document.createElement('button');
+        b.className = 'btn soon';
+        b.textContent = 'Soon';
+        btnWrap.appendChild(b);
+      } else if (item.state === 'download') {
+        meta.textContent = '';
+        // Download-Link: href bestimmt welche Datei geladen wird
+        const a = document.createElement('a');
+        a.className = 'btn download';
+        a.textContent = 'Download';
+        // Hier festlegen, welche Datei heruntergeladen werden soll:
+        // 1) relative Pfad zur Datei auf deinem Webserver (z.B. "downloads/aimlock-1.21.8.exe")
+        // 2) oder vollständige URL "https://example.com/files/aimlock.exe"
+        a.href = item.file;
+        a.setAttribute('download', 'aimlock-1.21.8.exe'); // optional: gewünschter Dateiname beim Speichern
+        btnWrap.appendChild(a);
+
+        // Alternativ: Du kannst per JS die Datei über fetch abrufen und dann als Blob anbieten (siehe Hinweis unten)
+      }
+
+      div.appendChild(h);
+      div.appendChild(meta);
+      div.appendChild(btnWrap);
+      // Zwischenräume: falls du mehr Inhalt willst, erweitere hier
+      menu.appendChild(div);
+    });
+  }
+
+  openBtn.addEventListener('click', () => {
+    buildMenu();
+    overlay.style.display = 'flex';
+  });
+  closeBtn.addEventListener('click', () => overlay.style.display = 'none');
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.style.display = 'none'; });
+
+  // Optional: Funktion zum erzwingen des Downloads per JS (wenn nötig)
+  // Beispiel: fetch die Datei und zwinge den Browser, eine Datei mit bestimmtem Namen zu speichern.
+  async function forceDownload(url, suggestedFilename) {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('Download fehlgeschlagen');
+    const blob = await resp.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = suggestedFilename || '';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(blobUrl);
+  }
+
+  // Hinweis: forceDownload wird nur benötigt, wenn du z.B. CORS/remote/response header steuerst
+  // und dem Browser einen bestimmten Dateinamen per JS zuweisen willst.
+</script>
 
 </body>
 </html>
