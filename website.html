@@ -1,195 +1,119 @@
 <!doctype html>
 <html lang="de">
 <head>
-  <!-- Grundlegende Metadaten für Charset und Responsiveness -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>AimLock</title>
 
   <style>
-    /* Basis-Styling zurücksetzen */
     * {box-sizing: border-box; margin: 0; padding: 0;}
     html, body {height: 100%;}
 
     body {
-      /* Schrift & Layout */
       font-family: 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at 20% 20%, #060014, #000000 90%),
+                  url('https://images.unsplash.com/photo-1570284613060-766c33850e00?fm=jpg&q=60&w=3000') no-repeat center center fixed;
+      background-size: cover;
+      background-blend-mode: overlay;
+      color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: flex-start;
       min-height: 100vh;
       overflow-x: hidden;
       position: relative;
-      color: #fff;
-      
-      /* Hintergrund: Kombination aus radialem Verlauf + Bild */
-      background: radial-gradient(circle at 20% 20%, #060014, #000000 90%),
-                  url('https://images.unsplash.com/photo-1570284613060-766c33850e00?ixlib=rb-4.1.0&q=60&w=3000') no-repeat center center fixed;
-      background-size: cover;
-      background-blend-mode: overlay; /* sorgt dafür, dass der Gradient sich mit dem Bild mischt */
+      padding-top: 40px;
     }
 
-    /* Separater Blur-Layer für Hintergrund */
     .bg-blur {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: url('https://images.unsplash.com/photo-1570284613060-766c33850e00?ixlib=rb-4.1.0&q=60&w=3000') no-repeat center center fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('https://images.unsplash.com/photo-1570284613060-766c33850e00?fm=jpg&q=60&w=3000') no-repeat center center fixed;
       background-size: cover;
-      filter: blur(6px) brightness(0.9); /* Weichzeichner + leichte Abdunklung */
-      z-index: 0; /* liegt ganz hinten */
+      filter: blur(3px) brightness(0.9); /* verringerter Blur */
+      z-index: 0;
     }
 
     header {
-      /* Header-Block über dem Blur */
+      text-align: center;
+      margin-bottom: 40px;
+      background: rgba(0,0,0,0.6);
+      padding: 20px 40px;
+      border-radius: 12px;
+      backdrop-filter: blur(4px);
       position: relative;
       z-index: 2;
-      text-align: center;
-      margin: 40px 0;
-      padding: 20px 40px;
-      background: rgba(0,0,0,0.6);
-      border-radius: 12px;
-      backdrop-filter: blur(6px); /* Glas-Effekt */
     }
 
     h1 {
-      /* Titel mit Glow-Effekt */
       font-size: 2.5rem;
       letter-spacing: 2px;
       color: #c0a6ff;
       text-shadow: 0 0 10px #8f6aff, 0 0 25px #3f2aff;
     }
 
-    p.lead {
-      /* Untertitel */
-      margin-top: 10px;
-      font-size: 1rem;
-      color: rgba(255, 255, 255, 0.8);
-    }
-
     .container {
-      /* Drei Info-Boxen grid-basiert */
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 30px;
       width: 90%;
       max-width: 1000px;
       position: relative;
       z-index: 2;
+      margin-bottom: 60px;
     }
 
     .box {
-      /* Glas-/Glow-Karten */
-      position: relative;
-      padding: 30px;
-      overflow: hidden;
-      text-align: center;
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255,255,255,0.08);
       border-radius: 15px;
+      padding: 30px;
+      text-align: center;
       border: 1px solid rgba(255,255,255,0.1);
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(5px);
+      backdrop-filter: blur(4px);
       transition: all 0.3s ease;
     }
 
-    .box::before {
-      /* Glow-Kreis beim Hover */
-      content: '';
-      position: absolute;
-      top: -50%; left: -50%;
-      width: 200%; height: 200%;
-      background: radial-gradient(circle, rgba(150,100,255,0.3) 0%, transparent 70%);
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-
-    .box:hover::before {
-      opacity: 1;
-    }
-
-    .box:hover {
-      /* Hover-Animation der Box */
-      transform: translateY(-10px) scale(1.05);
-      background: rgba(255, 255, 255, 0.12);
-      box-shadow: 0 0 35px rgba(150,100,255,0.6);
-    }
-
     .box a {
-      /* Buttons */
       display: inline-block;
       margin-top: 15px;
       padding: 10px 20px;
-      color: #fff;
-      text-decoration: none;
       border-radius: 8px;
-      background: rgba(150, 100, 255, 0.6);
-      transition: background 0.3s;
-      position: relative;
-      z-index: 3;
+      color: #fff;
+      background: rgba(150, 100, 255, 0.7);
+      text-decoration: none;
     }
 
     .box a:hover {
-      background: rgba(150, 100, 255, 0.9);
-    }
-
-    /* extra Abstand vor dem Footer */
-    .spacer {
-      height: 300px;
+      background: rgba(150, 100, 255, 1);
     }
 
     footer {
-      /* Footer-Styling */
-      margin-top: 50px;
-      padding: 20px;
-      text-align: center;
-      width: 90%;
-      max-width: 1000px;
+      margin-bottom: 40px;
       color: rgba(255,255,255,0.6);
+      font-size: 0.9rem;
       background: rgba(0,0,0,0.5);
+      padding: 10px 20px;
       border-radius: 10px;
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(3px);
       position: relative;
       z-index: 2;
-    }
-
-    .downloads {
-      /* Download-Bereich */
-      margin-top: 60px;
-      padding: 30px;
-      text-align: center;
-      width: 90%;
-      max-width: 1000px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 15px;
-      border: 1px solid rgba(255,255,255,0.1);
-      backdrop-filter: blur(5px);
-      position: relative;
-      z-index: 2;
-    }
-
-    .downloads a {
-      /* zukünftige Download-Buttons */
-      display: inline-block;
-      margin-top: 10px;
-      padding: 12px 25px;
-      border-radius: 10px;
-      background: rgba(150, 100, 255, 0.7);
-      text-decoration: none;
-      color: #fff;
     }
   </style>
 </head>
 <body>
-  <!-- Hintergrund-Weichzeichner-Schicht -->
   <div class="bg-blur"></div>
 
   <header>
     <h1>AimLock</h1>
-    <p class="lead">The HackClient for Minecraft</p>
+    <p class="lead">The HackClient for Fortnite</p>
   </header>
 
-  <!-- Grid-Bereich für Info-Karten -->
   <section class="container">
+
     <div class="box">
       <h2>Our Discord</h2>
       <p>Join our discord for support and The mod</p>
@@ -206,30 +130,42 @@
       <h2>Status</h2>
       <p>The mod is currently still in development. Join our Discord to not miss the release.</p>
     </div>
-  </section>
 
-  <!-- Platz für spätere Downloads -->
-  <div class="downloads">
-    <h2>Downloads (Coming Soon)</h2>
-    <p>Space for future download buttons and info.</p>
-
-    <!-- zusätzlicher Download-Slot -->
-    <a href="data:text/plain;charset=utf-8,Dies%20ist%20eine%20Beispiel-Textdatei." download="aimlock-info.txt">Download</a>
-
-    <!-- Social Media Feld -->
-    <div style="margin-top:25px;">
-      <h3>Social Media</h3>
-      <a href="https://instagram.com" target="_blank">Instagram</a>
-      <a href="https://twitter.com" target="_blank" style="margin-left:10px;">Twitter</a>
+    <!-- Download 1.21.8 -->
+    <div class="box">
+      <h2>Download 1.21.8</h2>
+      <a href="/downloads/aimlock_1.21.8.zip" download>Download</a>
     </div>
-  </div>
 
-  <!-- zusätzlicher Abstand vor Footer -->
-  <div class="spacer"></div>
+    <!-- More Button → Übersicht -->
+    <div class="box">
+      <h2>More</h2>
+      <p>Alle Versionen anzeigen</p>
+      <a href="#" onclick="document.querySelector('.container').style.display='none'; document.getElementById('versions').style.display='grid'; window.scrollTo(0,0);">View</a>
+    </div>
+
+    </section>
+
+<!-- Versions Übersicht -->
+<section id="versions" class="container" style="display:none; margin-top:40px;">
+  <div class="box">
+    <h2>1.21.8</h2>
+    <p>Soon</p>
+  </div>
+  <div class="box">
+    <h2>1.21.9</h2>
+    <p>Soon</p>
+  </div>
+  <div class="box">
+    <h2>1.21.10</h2>
+    <p>Soon</p>
+  </div>
+</section>
 
   <footer>
     <p>© 2025 AIMlock</p>
-    <p>all rights reserved</p>
+    <p>All rights reserved</p>
   </footer>
+
 </body>
 </html>
