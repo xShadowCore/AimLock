@@ -5,20 +5,30 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>AimLock</title>
 <style>
+  :root{
+    --bg-img: url('https://images.unsplash.com/photo-1570284613060-766c33850e00?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0');
+    --glass: rgba(4,6,12,0.6);
+    --accent1: #7b5fff;
+    --accent2: #a17bff;
+  }
   * { box-sizing: border-box; margin:0; padding:0; }
   body {
     font-family: "Segoe UI", Roboto, Arial, sans-serif;
     color: #fff;
-    background: url('https://images.unsplash.com/photo-1570284613060-766c33850e00?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') center/cover no-repeat fixed;
+    background: var(--bg-img) center/cover no-repeat fixed;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 20px;
     padding: 40px 20px 80px;
+    transition: background-color .2s, color .2s;
   }
-
-  /* header with top-right auth */
+  /* light theme */
+  body.light {
+    background: #f3f4f6;
+    color: #111827;
+  }
   .header {
     position: fixed;
     top: 18px;
@@ -38,6 +48,7 @@
     box-shadow: 0 6px 30px rgba(0,0,0,0.6);
     font-weight:700;
   }
+  body.light .brand { background: rgba(255,255,255,0.85); color: #111; box-shadow:none; }
   .auth {
     pointer-events: auto;
     display:flex;
@@ -45,24 +56,37 @@
     gap:10px;
     position: relative;
   }
-  .auth .user-badge {
+  .user-badge {
     display:flex;
     align-items:center;
-    gap:8px;
+    gap:10px;
     background: rgba(0,0,0,0.45);
     padding:6px 10px;
     border-radius:10px;
     font-size:14px;
     position: relative;
   }
-  .auth img.avatar {
+  body.light .user-badge { background: rgba(255,255,255,0.85); color:#111; }
+  .user-badge img.avatar {
     width:34px;
     height:34px;
     border-radius:50%;
     object-fit:cover;
     border:1px solid rgba(255,255,255,0.06);
-    cursor: pointer;
+    cursor: default;
   }
+  /* settings icon (user provided) */
+  #settingsIcon {
+    width:28px;
+    height:28px;
+    cursor: pointer;
+    border-radius:6px;
+    object-fit:cover;
+    background: rgba(255,255,255,0.02);
+    padding:2px;
+    display:none; /* shown only when logged in */
+  }
+  body.light #settingsIcon { background: rgba(0,0,0,0.04); }
 
   .settings-menu {
     display:none;
@@ -74,10 +98,14 @@
     border-radius:10px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.6);
     z-index: 1100;
-    width:220px;
+    width:260px;
   }
-  .settings-menu label { font-size:12px; opacity:0.9; display:block; margin-bottom:6px; }
-  .settings-menu input { width:100%; padding:6px 8px; border-radius:6px; border:0; margin-bottom:8px; }
+  body.light .settings-menu { background: #fff; color:#111; box-shadow:none; border:1px solid rgba(0,0,0,0.08); }
+  .settings-menu label { font-size:12px; opacity:0.95; display:block; margin-bottom:6px; }
+  .settings-menu input, .settings-menu select {
+    width:100%; padding:8px 10px; border-radius:6px; border:0; margin-bottom:8px;
+  }
+  body.light .settings-menu input, body.light .settings-menu select { border:1px solid #e5e7eb; }
 
   .logo {
     background: rgba(0,0,0,0.5);
@@ -86,7 +114,10 @@
     text-align: center;
     box-shadow: 0 6px 30px rgba(0,0,0,0.6);
   }
+  body.light .logo { background: rgba(255,255,255,0.85); color:#111; box-shadow:none; }
   .logo h1 { font-size: 34px; letter-spacing: 1px; margin-bottom: 6px; color: #d9b8ff; }
+  body.light .logo h1 { color:#6b21a8; }
+
   .cards { display:flex; gap:24px; justify-content:center; width:100%; max-width:1100px; flex-wrap: wrap; margin-top:120px; }
   .card {
     background: rgba(10,20,30,0.45);
@@ -97,15 +128,17 @@
     border: 1px solid rgba(255,255,255,0.06);
     backdrop-filter: blur(6px);
   }
+  body.light .card { background: #fff; color:#111; border:1px solid #e6e6e6; }
   .card h3 { margin-bottom: 8px; font-size:20px; }
   .card p { font-size:14px; color: #dfe9f2; opacity:0.9; }
+  body.light .card p { color:#374151; opacity:0.95; }
 
   .show-versions-btn {
     position: fixed;
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(90deg,#7b5fff,#a17bff);
+    background: linear-gradient(90deg,var(--accent1),var(--accent2));
     padding: 12px 22px;
     border-radius: 28px;
     border: none;
@@ -115,119 +148,29 @@
     box-shadow: 0 8px 30px rgba(123,91,255,0.15);
   }
 
-  /* Buttons */
-  .btn {
-    display:inline-block;
-    padding:8px 12px;
-    border-radius:8px;
-    text-decoration:none;
-    font-weight:600;
-    border: none;
-    cursor:pointer;
-  }
-
-  .btn.discord {
-    background: linear-gradient(90deg,#7289da,#99a9ff);
-    color: #fff;
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: 24px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(114,137,218,0.4);
-  }
-  .btn.discord:hover {
-    background: linear-gradient(90deg,#99a9ff,#7289da);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(114,137,218,0.5);
-  }
-  .btn.discord:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 15px rgba(114,137,218,0.3);
-  }
-
-  .btn.tiktok {
-    background: linear-gradient(90deg,#25f4ee,#fe2c55);
-    color: #fff;
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: 24px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(255,44,85,0.4);
-  }
-  .btn.tiktok:hover {
-    background: linear-gradient(90deg,#fe2c55,#25f4ee);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(255,44,85,0.5);
-  }
-  .btn.tiktok:active {
-    transform: translateY(0);
-    box-shadow: 0 4px 15px rgba(255,44,85,0.3);
-  }
-
+  .btn { display:inline-block; padding:8px 12px; border-radius:8px; text-decoration:none; font-weight:600; border: none; cursor:pointer; }
+  .btn.discord { background: linear-gradient(90deg,#7289da,#99a9ff); color: #fff; padding:10px 18px; border-radius:24px; }
+  .btn.tiktok { background: linear-gradient(90deg,#25f4ee,#fe2c55); color: #fff; padding:10px 18px; border-radius:24px; }
   .btn.soon { background: rgba(255,255,255,0.06); color: #eee; cursor: default; }
-  .btn.download {
-    background: linear-gradient(90deg,#6fb3ff,#7b5fff);
-    color:#041024;
-  }
+  .btn.download { background: linear-gradient(90deg,#6fb3ff,#7b5fff); color:#041024; }
 
-  .favorite {
-    display:inline-flex;
-    gap:6px;
-    align-items:center;
-    margin-top:8px;
-  }
+  .favorite { display:inline-flex; gap:6px; align-items:center; margin-top:8px; }
   .favorite button { background:transparent; border:1px solid rgba(255,255,255,0.06); color:#fff; padding:6px 8px; border-radius:8px; cursor:pointer; }
+  body.light .favorite button { border:1px solid #e6e6e6; color:#111; }
 
-  .overlay {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(6,8,12,0.6);
-    z-index: 999;
-    padding: 20px;
-  }
-  .menu {
-    width: 100%;
-    max-width: 760px;
-    background: rgba(4,6,12,0.6);
-    padding: 22px;
-    border-radius: 12px;
-    display: grid;
-    grid-template-columns: repeat(2,1fr);
-    gap: 12px;
-    border: 1px solid rgba(255,255,255,0.05);
-    position: relative;
-  }
-  .version {
-    background: rgba(255,255,255,0.03);
-    padding: 12px;
-    border-radius: 8px;
-    text-align:center;
-  }
-  .version h4 { margin-bottom:6px; }
-  .version .meta { margin-bottom:8px; opacity:0.9; }
+  .overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(6,8,12,0.6); z-index: 999; padding: 20px; }
+  .menu { width: 100%; max-width: 760px; background: rgba(4,6,12,0.6); padding: 22px; border-radius: 12px; display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; border: 1px solid rgba(255,255,255,0.05); position: relative; }
+  body.light .menu { background: #fff; color:#111; border:1px solid #e6e6e6; }
+  .version { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; text-align:center; }
+  body.light .version { background: transparent; }
+  .close-x { position:absolute; top:20px; right:20px; color:#fff; font-size:18px; background:transparent; border:0; cursor:pointer; }
+  body.light .close-x { color:#111; }
 
-  .close-x {
-    position:absolute;
-    top:20px;
-    right:20px;
-    color:#fff;
-    font-size:18px;
-    background:transparent;
-    border:0;
-    cursor:pointer;
-  }
+  @media (max-width:700px) { .cards { flex-direction: column; align-items:center } .menu { grid-template-columns: 1fr; } }
 
-  @media (max-width:700px) {
-    .cards { flex-direction: column; align-items:center; }
-    .menu { grid-template-columns: 1fr; }
-  }
+  /* small helpers */
+  .muted { opacity: .75; font-size:13px; }
+  input[type="checkbox"] { transform: scale(1.1); margin-right:6px; vertical-align:middle; }
 </style>
 </head>
 <body>
@@ -235,36 +178,48 @@
   <div class="header">
     <div class="brand">AimLock</div>
     <div class="auth" id="authArea">
-      <div id="userBadge" style="display:none;" class="user-badge">
-        <img id="avatarImg" class="avatar" src="" alt="avatar" title="Click to open settings">
-        <div id="usernameText"></div>
+      <div id="userBadge" class="user-badge" style="display:none;">
+        <img id="avatarImg" class="avatar" src="" alt="avatar">
+        <div id="usernameText">User</div>
         <button id="signOutBtn" class="btn" style="margin-left:8px; padding:6px 10px; border-radius:8px; background:rgba(255,255,255,0.06); color:#fff;">Sign out</button>
-
+        <!-- settings icon (user provided image) -->
+        <img id="settingsIcon" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Windows_Settings_app_icon.png/1024px-Windows_Settings_app_icon.png" alt="Settings" title="Open settings">
         <div id="settingsMenu" class="settings-menu" role="menu" aria-hidden="true">
           <label for="nameInput">Display name</label>
           <input id="nameInput" placeholder="Display name">
+
           <label for="avatarInput">Avatar URL</label>
           <input id="avatarInput" placeholder="https://...">
+
+          <label for="themeSelect">Theme</label>
+          <select id="themeSelect">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+          </select>
+
+          <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="showNotifications">Show notifications</label>
+          <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="enableSounds">Enable sounds</label>
+
           <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:6px;">
             <button id="saveSettings" class="btn">Save</button>
             <button id="clearSettings" class="btn" style="background:rgba(255,255,255,0.06)">Reset</button>
           </div>
         </div>
-
       </div>
+
       <button id="signInBtn" class="btn discord">Register / Sign in</button>
     </div>
   </div>
 
   <div class="logo">
     <h1>AimLock</h1>
-    <div>The HackClient for Minecraft</div>
+    <div class="muted">The HackClient for Minecraft</div>
   </div>
 
   <div class="cards" aria-hidden="true">
     <div class="card">
       <h3>Our Discord</h3>
-      <p>Join our Discord for support and The mod</p>
+      <p>Join our Discord for support and the mod</p>
       <button class="btn discord" onclick="window.open('https://discord.com/invite/NMxqjrJ4Au','_blank')">Discord</button>
     </div>
 
@@ -287,20 +242,19 @@
 
   <button class="show-versions-btn" id="openMenuBtn">Show versions</button>
 
-  <div class="overlay" id="overlay">
+  <div id="overlay" class="overlay">
     <div class="menu" role="dialog" aria-modal="true" aria-label="Menu">
-      <button class="close-x" id="closeBtn" title="Close">✕</button>
+      <button id="closeBtn" class="close-x" title="Close">✕</button>
     </div>
   </div>
 
 <script>
-/* ---------- OAUTH CONFIG (filled with values you supplied) ---------- */
+/* ---------- OAUTH CONFIG ---------- */
 const CLIENT_ID = '1441317350010785962';
 const REDIRECT_URI = 'https://xshadowcore.github.io/AIMbot/website';
 const SCOPES = 'identify';
-/* ------------------------------------------------------------------- */
 
-/* Utility to build the OAuth URL (implicit flow for static site) */
+/* OAuth helpers */
 function buildDiscordOAuthUrl() {
   const base = 'https://discord.com/oauth2/authorize';
   const params = new URLSearchParams({
@@ -312,21 +266,17 @@ function buildDiscordOAuthUrl() {
   });
   return `${base}?${params.toString()}`;
 }
-
-/* parse token from URL hash */
 function parseHashToken() {
   if (!window.location.hash) return null;
   const hash = window.location.hash.substring(1);
   const params = new URLSearchParams(hash);
   return params.get('access_token');
 }
+function saveToken(token){ if(!token) return; sessionStorage.setItem('discord_token', token); }
+function loadToken(){ return sessionStorage.getItem('discord_token'); }
+function clearToken(){ sessionStorage.removeItem('discord_token'); }
 
-/* token storage */
-function saveToken(token) { if (!token) return; sessionStorage.setItem('discord_token', token); }
-function loadToken() { return sessionStorage.getItem('discord_token'); }
-function clearToken() { sessionStorage.removeItem('discord_token'); }
-
-/* small helper for default avatar */
+/* avatar helpers */
 function defaultAvatarUrl(discriminator) {
   const idx = (parseInt(discriminator) || 0) % 5;
   return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
@@ -341,23 +291,22 @@ function avatarUrl(user) {
   return defaultAvatarUrl(user.discriminator);
 }
 
-/* current logged in user id */
+/* state */
 let CURRENT_USER_ID = null;
+let CURRENT_DISCORD_USER = null;
 
-/* fetch user and show UI */
+/* fetch Discord user and show UI */
 async function fetchAndShowUser(token) {
   try {
     const res = await fetch('https://discord.com/api/users/@me', {
       headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }
     });
-    if (!res.ok) {
-      signOut();
-      return;
-    }
+    if (!res.ok) { signOut(); return; }
     const user = await res.json();
     CURRENT_USER_ID = user.id;
+    CURRENT_DISCORD_USER = user;
 
-    // load user-specific settings from localStorage if present
+    // load per-user settings
     const saved = JSON.parse(localStorage.getItem('user_settings_' + user.id) || 'null');
     const displayName = (saved && saved.displayName) ? saved.displayName : `${user.username}#${user.discriminator}`;
     const avatarSrc = (saved && saved.avatarUrl) ? saved.avatarUrl : avatarUrl(user);
@@ -368,71 +317,102 @@ async function fetchAndShowUser(token) {
     // fill settings inputs
     document.getElementById('nameInput').value = saved && saved.displayName ? saved.displayName : '';
     document.getElementById('avatarInput').value = saved && saved.avatarUrl ? saved.avatarUrl : '';
+    document.getElementById('themeSelect').value = saved && saved.theme ? saved.theme : 'dark';
+    document.getElementById('showNotifications').checked = saved && !!saved.notifications;
+    document.getElementById('enableSounds').checked = saved && !!saved.sounds;
 
+    // show elements
     document.getElementById('userBadge').style.display = 'flex';
+    document.getElementById('settingsIcon').style.display = 'inline-block';
     document.getElementById('signInBtn').style.display = 'none';
+
+    // apply theme
+    applyTheme(document.getElementById('themeSelect').value);
   } catch (err) {
     console.error('Error fetching Discord user:', err);
   }
 }
 
-/* sign in / out handlers */
+/* sign in/out */
 document.getElementById('signInBtn').addEventListener('click', () => {
   window.location.href = buildDiscordOAuthUrl();
 });
 document.getElementById('signOutBtn').addEventListener('click', () => {
   signOut();
 });
-
-function signOut() {
+function signOut(){
   clearToken();
   CURRENT_USER_ID = null;
+  CURRENT_DISCORD_USER = null;
   document.getElementById('userBadge').style.display = 'none';
+  document.getElementById('settingsIcon').style.display = 'none';
   document.getElementById('signInBtn').style.display = 'inline-block';
-  // optionally clean URL
+  // reset theme to dark by default
+  applyTheme('dark');
   history.replaceState({}, '', REDIRECT_URI);
 }
 
-/* settings menu behavior */
-const avatarImgEl = document.getElementById('avatarImg');
+/* settings menu behavior (settings icon click opens menu) */
+const settingsIcon = document.getElementById('settingsIcon');
 const settingsMenu = document.getElementById('settingsMenu');
-avatarImgEl.addEventListener('click', (e) => {
-  // only show if logged in
+settingsIcon.addEventListener('click', () => {
   if (!CURRENT_USER_ID) return;
   settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
 });
+
+/* save/reset settings */
 document.getElementById('saveSettings').addEventListener('click', () => {
   if (!CURRENT_USER_ID) return;
   const newName = document.getElementById('nameInput').value.trim();
   const newAvatar = document.getElementById('avatarInput').value.trim();
-  const obj = { displayName: newName || null, avatarUrl: newAvatar || null };
+  const theme = document.getElementById('themeSelect').value;
+  const notifications = document.getElementById('showNotifications').checked;
+  const sounds = document.getElementById('enableSounds').checked;
+  const obj = { displayName: newName || null, avatarUrl: newAvatar || null, theme, notifications, sounds };
   localStorage.setItem('user_settings_' + CURRENT_USER_ID, JSON.stringify(obj));
   if (newName) document.getElementById('usernameText').textContent = newName;
   if (newAvatar) document.getElementById('avatarImg').src = newAvatar;
+  applyTheme(theme);
   settingsMenu.style.display = 'none';
 });
 document.getElementById('clearSettings').addEventListener('click', () => {
   if (!CURRENT_USER_ID) return;
   localStorage.removeItem('user_settings_' + CURRENT_USER_ID);
-  // reload stored user info from Discord (token must still be valid)
   const token = loadToken();
   if (token) fetchAndShowUser(token);
   settingsMenu.style.display = 'none';
 });
 
-/* Handle OAuth redirect and load user */
+/* theme application */
+function applyTheme(theme) {
+  if (theme === 'light') {
+    document.body.classList.add('light');
+  } else {
+    document.body.classList.remove('light');
+  }
+}
+
+/* close settings menu when clicking outside */
+document.addEventListener('click', (e) => {
+  const settings = document.getElementById('settingsMenu');
+  const icon = document.getElementById('settingsIcon');
+  if (!settings.contains(e.target) && e.target !== icon) {
+    settings.style.display = 'none';
+  }
+});
+
+/* Handle redirect: store token and fetch user */
 async function handleRedirect() {
   const tokenFromHash = parseHashToken();
   if (tokenFromHash) {
     saveToken(tokenFromHash);
-    // remove hash from URL
     history.replaceState({}, '', REDIRECT_URI);
   }
   const token = loadToken();
   if (token) await fetchAndShowUser(token);
 }
 
-/* ---------- versions menu ---------- */
+/* ---------- versions data ---------- */
 const versions = [
   { v: 'DEV', state: 'download', file: 'downloads/no-available-yet.txt' },
   { v: '1.21.8', state: 'soon', file: '' },
@@ -449,7 +429,7 @@ const openBtn = document.getElementById('openMenuBtn');
 const closeBtn = document.getElementById('closeBtn');
 const menu = overlay.querySelector('.menu');
 
-/* helper: get favorites for current user (array of version indices) */
+/* per-user favorites stored in localStorage under favorites_USERID */
 function getUserFavorites() {
   if (!CURRENT_USER_ID) return [];
   return JSON.parse(localStorage.getItem('favorites_' + CURRENT_USER_ID) || '[]');
@@ -459,10 +439,10 @@ function saveUserFavorites(arr) {
   localStorage.setItem('favorites_' + CURRENT_USER_ID, JSON.stringify(arr));
 }
 
-/* build menu with gated downloads and favorite buttons */
+/* build versions menu */
 function buildMenu() {
-  const existing = menu.querySelectorAll('.version');
-  existing.forEach(n => n.remove());
+  // clear
+  menu.querySelectorAll('.version').forEach(n => n.remove());
 
   const favs = getUserFavorites();
 
@@ -500,7 +480,6 @@ function buildMenu() {
         lock.textContent = 'Login to download';
         lock.style.background = 'rgba(255,255,255,0.06)';
         lock.addEventListener('click', () => {
-          // prompt sign in
           window.alert('You must sign in to download.');
           document.getElementById('signInBtn').click();
         });
@@ -508,7 +487,7 @@ function buildMenu() {
       }
     }
 
-    // favorite button (only if logged in)
+    // favorite button
     const favWrap = document.createElement('div');
     favWrap.className = 'favorite';
     const favBtn = document.createElement('button');
@@ -548,16 +527,7 @@ openBtn.addEventListener('click', () => {
 closeBtn.addEventListener('click', () => overlay.style.display = 'none');
 overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.style.display = 'none'; });
 
-/* close settings menu when clicking outside */
-document.addEventListener('click', (e) => {
-  const settings = document.getElementById('settingsMenu');
-  const avatar = document.getElementById('avatarImg');
-  if (!settings.contains(e.target) && e.target !== avatar) {
-    settings.style.display = 'none';
-  }
-});
-
-/* initialise on load */
+/* init */
 window.addEventListener('load', () => {
   handleRedirect();
 });
