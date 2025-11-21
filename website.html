@@ -40,6 +40,15 @@
     pointer-events: none;
     z-index: 1000;
   }
+  .owner-access {
+    pointer-events: auto;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-right:8px;
+    color: #d1d5db;
+    font-size:13px;
+  }
   .brand {
     pointer-events: auto;
     background: rgba(0,0,0,0.5);
@@ -166,6 +175,12 @@
   .close-x { position:absolute; top:20px; right:20px; color:#fff; font-size:18px; background:transparent; border:0; cursor:pointer; }
   body.light .close-x { color:#111; }
 
+  /* owner button */
+  #ownerAccessContainer { pointer-events: auto; display:flex; align-items:center; gap:8px; }
+  #ownerBtn { width:36px; height:36px; cursor:pointer; border-radius:8px; background:transparent; }
+  #ownerStatusText { font-size:13px; color:#f3f4f6; }
+  body.light #ownerStatusText { color:#111; }
+
   @media (max-width:700px) { .cards { flex-direction: column; align-items:center } .menu { grid-template-columns: 1fr; } }
 
   /* small helpers */
@@ -175,13 +190,17 @@
 <body>
 
   <div class="header">
+    <div id="ownerAccessContainer" class="owner-access" aria-hidden="true">
+      <!-- Dynamic owner button / message inserted here -->
+    </div>
+
     <div class="brand">AimLock</div>
     <div class="auth" id="authArea">
       <div id="userBadge" class="user-badge" style="display:none;">
         <img id="avatarImg" class="avatar" src="" alt="avatar">
         <div id="usernameText">User</div>
         <button id="signOutBtn" class="btn" style="margin-left:8px; padding:6px 10px; border-radius:8px; background:rgba(255,255,255,0.06); color:#fff;">Sign out</button>
-        <!-- settings icon (user provided image) -->
+        <!-- settings icon (user provided) -->
         <img id="settingsIcon" src="https://icons.veryicon.com/png/o/miscellaneous/user-center/account-settings-11.png" alt="Settings" title="Open settings">
         <div id="settingsMenu" class="settings-menu" role="menu" aria-hidden="true">
           <label for="nameInput">Display name</label>
@@ -225,11 +244,13 @@
       <button class="btn tiktok" onclick="window.open('https://www.tiktok.com','_blank')">TikTok</button>
     </div>
 
-    <div class="card">
+    <div class="card" id="ownersCard">
       <h3>Owners</h3>
       <p>xShadowCore<br>UserID: 1109112702347006053</p>
       <p><br></p>
       <p>valentineeee<br>UserID: 1176185201957802075</p>
+      <!-- owner indicator (dynamically filled) -->
+      <div id="ownerIndicator" style="margin-top:12px; font-size:14px; color:#dfe9f2;"></div>
     </div>
 
     <div class="card">
@@ -251,6 +272,9 @@
 const CLIENT_ID = '1441317350010785962';
 const REDIRECT_URI = 'https://xshadowcore.github.io/AIMbot/website';
 const SCOPES = 'identify';
+
+/* OWNER IDS */
+const OWNER_IDS = ['1109112702347006053', '1176185201957802075'];
 
 /* OAuth helpers */
 function buildDiscordOAuthUrl() {
@@ -293,6 +317,44 @@ function avatarUrl(user) {
 let CURRENT_USER_ID = null;
 let CURRENT_DISCORD_USER = null;
 
+/* helper to update owner-access UI */
+function updateOwnerAccessUI() {
+  const container = document.getElementById('ownerAccessContainer');
+  container.innerHTML = '';
+
+  // If signed in and owner, show button (image)
+  if (CURRENT_USER_ID && OWNER_IDS.includes(CURRENT_USER_ID)) {
+    const img = document.createElement('img');
+    img.id = 'ownerBtn';
+    img.src = 'https://cdn3.emoji.gg/emojis/8335-developer.png';
+    img.alt = 'Owner Button';
+    img.title = 'Owner Access';
+    img.addEventListener('click', () => {
+      // minimal owner action: open a small alert indicating access (keeps behavior minimal)
+      alert('Owner button clicked — access granted.');
+    });
+    container.appendChild(img);
+
+    // show indicator under owners card
+    const indicator = document.getElementById('ownerIndicator');
+    if (indicator) {
+      // display which owner is logged in (use username if available)
+      const name = (CURRENT_DISCORD_USER && (CURRENT_DISCORD_USER.username)) ? CURRENT_DISCORD_USER.username : 'Owner';
+      indicator.textContent = `Owner signed in: ${name} (${CURRENT_USER_ID})`;
+    }
+  } else {
+    // not owner: show message
+    const span = document.createElement('span');
+    span.id = 'ownerStatusText';
+    span.textContent = 'You must be an owner';
+    container.appendChild(span);
+
+    // clear owners card indicator
+    const indicator = document.getElementById('ownerIndicator');
+    if (indicator) indicator.textContent = '';
+  }
+}
+
 /* fetch Discord user and show UI */
 async function fetchAndShowUser(token) {
   try {
@@ -324,6 +386,9 @@ async function fetchAndShowUser(token) {
 
     // apply theme
     applyTheme(document.getElementById('themeSelect').value);
+
+    // update owner UI
+    updateOwnerAccessUI();
   } catch (err) {
     console.error('Error fetching Discord user:', err);
   }
@@ -346,6 +411,7 @@ function signOut(){
   // reset theme to dark by default
   applyTheme('dark');
   history.replaceState({}, '', REDIRECT_URI);
+  updateOwnerAccessUI();
 }
 
 /* settings menu behavior (settings icon click opens menu) */
@@ -404,6 +470,7 @@ async function handleRedirect() {
   }
   const token = loadToken();
   if (token) await fetchAndShowUser(token);
+  else updateOwnerAccessUI(); // ensure UI shows "You must be an owner" when no user
 }
 
 /* ---------- versions data ---------- */
