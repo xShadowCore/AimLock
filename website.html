@@ -170,7 +170,6 @@
 
   /* small helpers */
   .muted { opacity: .75; font-size:13px; }
-  input[type="checkbox"] { transform: scale(1.1); margin-right:6px; vertical-align:middle; }
 </style>
 </head>
 <body>
@@ -196,9 +195,6 @@
             <option value="dark">Dark</option>
             <option value="light">Light</option>
           </select>
-
-          <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="showNotifications">Show notifications</label>
-          <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="enableSounds">Enable sounds</label>
 
           <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:6px;">
             <button id="saveSettings" class="btn">Save</button>
@@ -318,8 +314,6 @@ async function fetchAndShowUser(token) {
     document.getElementById('nameInput').value = saved && saved.displayName ? saved.displayName : '';
     document.getElementById('avatarInput').value = saved && saved.avatarUrl ? saved.avatarUrl : '';
     document.getElementById('themeSelect').value = saved && saved.theme ? saved.theme : 'dark';
-    document.getElementById('showNotifications').checked = saved && !!saved.notifications;
-    document.getElementById('enableSounds').checked = saved && !!saved.sounds;
 
     // show elements
     document.getElementById('userBadge').style.display = 'flex';
@@ -366,9 +360,7 @@ document.getElementById('saveSettings').addEventListener('click', () => {
   const newName = document.getElementById('nameInput').value.trim();
   const newAvatar = document.getElementById('avatarInput').value.trim();
   const theme = document.getElementById('themeSelect').value;
-  const notifications = document.getElementById('showNotifications').checked;
-  const sounds = document.getElementById('enableSounds').checked;
-  const obj = { displayName: newName || null, avatarUrl: newAvatar || null, theme, notifications, sounds };
+  const obj = { displayName: newName || null, avatarUrl: newAvatar || null, theme };
   localStorage.setItem('user_settings_' + CURRENT_USER_ID, JSON.stringify(obj));
   if (newName) document.getElementById('usernameText').textContent = newName;
   if (newAvatar) document.getElementById('avatarImg').src = newAvatar;
