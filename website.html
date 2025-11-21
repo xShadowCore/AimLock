@@ -43,6 +43,7 @@
     display:flex;
     align-items:center;
     gap:10px;
+    position: relative;
   }
   .auth .user-badge {
     display:flex;
@@ -52,6 +53,7 @@
     padding:6px 10px;
     border-radius:10px;
     font-size:14px;
+    position: relative;
   }
   .auth img.avatar {
     width:34px;
@@ -59,7 +61,23 @@
     border-radius:50%;
     object-fit:cover;
     border:1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
   }
+
+  .settings-menu {
+    display:none;
+    position:absolute;
+    top:48px;
+    right:0;
+    background: rgba(0,0,0,0.85);
+    padding:12px;
+    border-radius:10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+    z-index: 1100;
+    width:220px;
+  }
+  .settings-menu label { font-size:12px; opacity:0.9; display:block; margin-bottom:6px; }
+  .settings-menu input { width:100%; padding:6px 8px; border-radius:6px; border:0; margin-bottom:8px; }
 
   .logo {
     background: rgba(0,0,0,0.5);
@@ -156,6 +174,14 @@
     color:#041024;
   }
 
+  .favorite {
+    display:inline-flex;
+    gap:6px;
+    align-items:center;
+    margin-top:8px;
+  }
+  .favorite button { background:transparent; border:1px solid rgba(255,255,255,0.06); color:#fff; padding:6px 8px; border-radius:8px; cursor:pointer; }
+
   .overlay {
     position: fixed;
     inset: 0;
@@ -210,9 +236,21 @@
     <div class="brand">AimLock</div>
     <div class="auth" id="authArea">
       <div id="userBadge" style="display:none;" class="user-badge">
-        <img id="avatarImg" class="avatar" src="" alt="avatar">
+        <img id="avatarImg" class="avatar" src="" alt="avatar" title="Click to open settings">
         <div id="usernameText"></div>
         <button id="signOutBtn" class="btn" style="margin-left:8px; padding:6px 10px; border-radius:8px; background:rgba(255,255,255,0.06); color:#fff;">Sign out</button>
+
+        <div id="settingsMenu" class="settings-menu" role="menu" aria-hidden="true">
+          <label for="nameInput">Display name</label>
+          <input id="nameInput" placeholder="Display name">
+          <label for="avatarInput">Avatar URL</label>
+          <input id="avatarInput" placeholder="https://...">
+          <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:6px;">
+            <button id="saveSettings" class="btn">Save</button>
+            <button id="clearSettings" class="btn" style="background:rgba(255,255,255,0.06)">Reset</button>
+          </div>
+        </div>
+
       </div>
       <button id="signInBtn" class="btn discord">Register / Sign in</button>
     </div>
@@ -250,7 +288,7 @@
   <button class="show-versions-btn" id="openMenuBtn">Show versions</button>
 
   <div class="overlay" id="overlay">
-    <div class="menu" role="dialog" aria-modal="true" aria-label="Menü">
+    <div class="menu" role="dialog" aria-modal="true" aria-label="Menu">
       <button class="close-x" id="closeBtn" title="Close">✕</button>
     </div>
   </div>
@@ -262,76 +300,75 @@ const REDIRECT_URI = 'https://xshadowcore.github.io/AIMbot/website';
 const SCOPES = 'identify';
 /* ------------------------------------------------------------------- */
 
-/* Utility to build the OAuth URL.
-   Using implicit grant (response_type=token) so this works from static GitHub Pages.
-   If you prefer authorization code flow (response_type=code) you'll need a backend to exchange the code for a token. */
+/* Utility to build the OAuth URL (implicit flow for static site) */
 function buildDiscordOAuthUrl() {
   const base = 'https://discord.com/oauth2/authorize';
   const params = new URLSearchParams({
     client_id: CLIENT_ID,
     redirect_uri: REDIRECT_URI,
-    response_type: 'token', // implicit grant (client-side)
+    response_type: 'token',
     scope: SCOPES,
     prompt: 'consent'
   });
   return `${base}?${params.toString()}`;
 }
 
-/* Parse access_token from URL hash (#access_token=...) */
+/* parse token from URL hash */
 function parseHashToken() {
   if (!window.location.hash) return null;
-  const hash = window.location.hash.substring(1); // remove #
+  const hash = window.location.hash.substring(1);
   const params = new URLSearchParams(hash);
   return params.get('access_token');
 }
 
-/* Save token in sessionStorage */
-function saveToken(token) {
-  if (!token) return;
-  sessionStorage.setItem('discord_token', token);
-}
+/* token storage */
+function saveToken(token) { if (!token) return; sessionStorage.setItem('discord_token', token); }
+function loadToken() { return sessionStorage.getItem('discord_token'); }
+function clearToken() { sessionStorage.removeItem('discord_token'); }
 
-/* Load token from sessionStorage */
-function loadToken() {
-  return sessionStorage.getItem('discord_token');
+/* small helper for default avatar */
+function defaultAvatarUrl(discriminator) {
+  const idx = (parseInt(discriminator) || 0) % 5;
+  return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
 }
-
-/* Remove token */
-function clearToken() {
-  sessionStorage.removeItem('discord_token');
-}
-
-/* Get avatar URL */
 function avatarUrl(user) {
+  if (!user) return defaultAvatarUrl(0);
   if (user.avatar) {
     const isAnimated = user.avatar.startsWith('a_');
     const ext = isAnimated ? 'gif' : 'png';
     return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${ext}`;
-  } else {
-    // default avatar based on discriminator modulo 5
-    const idx = (parseInt(user.discriminator) || 0) % 5;
-    return `https://cdn.discordapp.com/embed/avatars/${idx}.png`;
   }
+  return defaultAvatarUrl(user.discriminator);
 }
 
-/* Fetch user data with token and show UI */
+/* current logged in user id */
+let CURRENT_USER_ID = null;
+
+/* fetch user and show UI */
 async function fetchAndShowUser(token) {
   try {
     const res = await fetch('https://discord.com/api/users/@me', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/json'
-      }
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }
     });
     if (!res.ok) {
-      // token invalid or expired
-      console.warn('Failed to fetch user:', res.status);
-      signOut(); // clear and update UI
+      signOut();
       return;
     }
     const user = await res.json();
-    document.getElementById('avatarImg').src = avatarUrl(user);
-    document.getElementById('usernameText').textContent = `${user.username}#${user.discriminator}`;
+    CURRENT_USER_ID = user.id;
+
+    // load user-specific settings from localStorage if present
+    const saved = JSON.parse(localStorage.getItem('user_settings_' + user.id) || 'null');
+    const displayName = (saved && saved.displayName) ? saved.displayName : `${user.username}#${user.discriminator}`;
+    const avatarSrc = (saved && saved.avatarUrl) ? saved.avatarUrl : avatarUrl(user);
+
+    document.getElementById('avatarImg').src = avatarSrc;
+    document.getElementById('usernameText').textContent = displayName;
+
+    // fill settings inputs
+    document.getElementById('nameInput').value = saved && saved.displayName ? saved.displayName : '';
+    document.getElementById('avatarInput').value = saved && saved.avatarUrl ? saved.avatarUrl : '';
+
     document.getElementById('userBadge').style.display = 'flex';
     document.getElementById('signInBtn').style.display = 'none';
   } catch (err) {
@@ -339,48 +376,72 @@ async function fetchAndShowUser(token) {
   }
 }
 
-/* Sign in handler */
+/* sign in / out handlers */
 document.getElementById('signInBtn').addEventListener('click', () => {
   window.location.href = buildDiscordOAuthUrl();
 });
-
-/* Sign out handler */
 document.getElementById('signOutBtn').addEventListener('click', () => {
   signOut();
 });
 
 function signOut() {
   clearToken();
+  CURRENT_USER_ID = null;
   document.getElementById('userBadge').style.display = 'none';
   document.getElementById('signInBtn').style.display = 'inline-block';
-  // optionally remove token/hash from URL
+  // optionally clean URL
   history.replaceState({}, '', REDIRECT_URI);
 }
 
-/* Handle redirect: if access_token in hash, store and fetch user, then clean URL */
+/* settings menu behavior */
+const avatarImgEl = document.getElementById('avatarImg');
+const settingsMenu = document.getElementById('settingsMenu');
+avatarImgEl.addEventListener('click', (e) => {
+  // only show if logged in
+  if (!CURRENT_USER_ID) return;
+  settingsMenu.style.display = settingsMenu.style.display === 'block' ? 'none' : 'block';
+});
+document.getElementById('saveSettings').addEventListener('click', () => {
+  if (!CURRENT_USER_ID) return;
+  const newName = document.getElementById('nameInput').value.trim();
+  const newAvatar = document.getElementById('avatarInput').value.trim();
+  const obj = { displayName: newName || null, avatarUrl: newAvatar || null };
+  localStorage.setItem('user_settings_' + CURRENT_USER_ID, JSON.stringify(obj));
+  if (newName) document.getElementById('usernameText').textContent = newName;
+  if (newAvatar) document.getElementById('avatarImg').src = newAvatar;
+  settingsMenu.style.display = 'none';
+});
+document.getElementById('clearSettings').addEventListener('click', () => {
+  if (!CURRENT_USER_ID) return;
+  localStorage.removeItem('user_settings_' + CURRENT_USER_ID);
+  // reload stored user info from Discord (token must still be valid)
+  const token = loadToken();
+  if (token) fetchAndShowUser(token);
+  settingsMenu.style.display = 'none';
+});
+
+/* Handle OAuth redirect and load user */
 async function handleRedirect() {
   const tokenFromHash = parseHashToken();
   if (tokenFromHash) {
     saveToken(tokenFromHash);
-    // remove hash from url to keep it clean
+    // remove hash from URL
     history.replaceState({}, '', REDIRECT_URI);
   }
   const token = loadToken();
-  if (token) {
-    await fetchAndShowUser(token);
-  }
+  if (token) await fetchAndShowUser(token);
 }
 
-/* ---------- versions menu (kept from original) ---------- */
+/* ---------- versions menu ---------- */
 const versions = [
   { v: 'DEV', state: 'download', file: 'downloads/no-available-yet.txt' },
-  { v: 'soon', state: 'soon' },
-  { v: 'soon', state: 'soon' },
-  { v: 'soon', state: 'soon' },
-  { v: 'soon', state: 'soon' },
-  { v: 'soon', state: 'soon' },
-  { v: 'soon', state: 'soon' },
-  { v: 'soon', state: 'soon' }
+  { v: '1.21.8', state: 'soon', file: '' },
+  { v: '1.21.9', state: 'soon', file: '' },
+  { v: '1.21.10', state: 'soon', file: '' },
+  { v: 'soon', state: 'soon', file: '' },
+  { v: 'soon', state: 'soon', file: '' },
+  { v: 'soon', state: 'soon', file: '' },
+  { v: 'soon', state: 'soon', file: '' }
 ];
 
 const overlay = document.getElementById('overlay');
@@ -388,17 +449,33 @@ const openBtn = document.getElementById('openMenuBtn');
 const closeBtn = document.getElementById('closeBtn');
 const menu = overlay.querySelector('.menu');
 
+/* helper: get favorites for current user (array of version indices) */
+function getUserFavorites() {
+  if (!CURRENT_USER_ID) return [];
+  return JSON.parse(localStorage.getItem('favorites_' + CURRENT_USER_ID) || '[]');
+}
+function saveUserFavorites(arr) {
+  if (!CURRENT_USER_ID) return;
+  localStorage.setItem('favorites_' + CURRENT_USER_ID, JSON.stringify(arr));
+}
+
+/* build menu with gated downloads and favorite buttons */
 function buildMenu() {
   const existing = menu.querySelectorAll('.version');
   existing.forEach(n => n.remove());
 
-  versions.forEach(item => {
+  const favs = getUserFavorites();
+
+  versions.forEach((item, idx) => {
     const div = document.createElement('div');
     div.className = 'version';
+
     const h = document.createElement('h4');
     h.textContent = item.v;
+
     const meta = document.createElement('div');
     meta.className = 'meta';
+
     const btnWrap = document.createElement('div');
 
     if (item.state === 'soon') {
@@ -409,18 +486,57 @@ function buildMenu() {
       btnWrap.appendChild(b);
     } else if (item.state === 'download') {
       meta.textContent = '';
-      const a = document.createElement('a');
-      a.className = 'btn download';
-      a.textContent = 'Download';
-      a.href = item.file;
-      const filename = (item.file && item.file.split('/').pop()) || 'download.bin';
-      a.setAttribute('download', filename);
-      btnWrap.appendChild(a);
+      if (CURRENT_USER_ID) {
+        const a = document.createElement('a');
+        a.className = 'btn download';
+        a.textContent = 'Download';
+        a.href = item.file;
+        const filename = (item.file && item.file.split('/').pop()) || 'download.bin';
+        a.setAttribute('download', filename);
+        btnWrap.appendChild(a);
+      } else {
+        const lock = document.createElement('button');
+        lock.className = 'btn';
+        lock.textContent = 'Login to download';
+        lock.style.background = 'rgba(255,255,255,0.06)';
+        lock.addEventListener('click', () => {
+          // prompt sign in
+          window.alert('You must sign in to download.');
+          document.getElementById('signInBtn').click();
+        });
+        btnWrap.appendChild(lock);
+      }
     }
+
+    // favorite button (only if logged in)
+    const favWrap = document.createElement('div');
+    favWrap.className = 'favorite';
+    const favBtn = document.createElement('button');
+    favBtn.setAttribute('aria-label', 'favorite');
+    favBtn.textContent = favs.includes(idx) ? '★ Favorited' : '☆ Favorite';
+    favBtn.disabled = !CURRENT_USER_ID;
+    favBtn.style.opacity = CURRENT_USER_ID ? '1' : '0.6';
+    favBtn.addEventListener('click', () => {
+      if (!CURRENT_USER_ID) {
+        window.alert('Sign in to favorite versions.');
+        return;
+      }
+      let f = getUserFavorites();
+      if (f.includes(idx)) {
+        f = f.filter(x => x !== idx);
+        favBtn.textContent = '☆ Favorite';
+      } else {
+        f.push(idx);
+        favBtn.textContent = '★ Favorited';
+      }
+      saveUserFavorites(f);
+    });
+    favWrap.appendChild(favBtn);
 
     div.appendChild(h);
     div.appendChild(meta);
     div.appendChild(btnWrap);
+    div.appendChild(favWrap);
     menu.appendChild(div);
   });
 }
@@ -431,8 +547,17 @@ openBtn.addEventListener('click', () => {
 });
 closeBtn.addEventListener('click', () => overlay.style.display = 'none');
 overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.style.display = 'none'; });
-/* ------------------------------------------------------------------ */
 
+/* close settings menu when clicking outside */
+document.addEventListener('click', (e) => {
+  const settings = document.getElementById('settingsMenu');
+  const avatar = document.getElementById('avatarImg');
+  if (!settings.contains(e.target) && e.target !== avatar) {
+    settings.style.display = 'none';
+  }
+});
+
+/* initialise on load */
 window.addEventListener('load', () => {
   handleRedirect();
 });
